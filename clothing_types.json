@@ -1,0 +1,25 @@
+{
+  "categories": {
+    "Tops": ["T-shirt", "polo shirt", "button-up shirt", "flannel shirt", "Henley shirt"],
+    "Mid Layers": ["hoodie", "sweatshirt", "crewneck sweatshirt", "cardigan", "pullover sweater", "turtleneck"],
+    "Outerwear": ["jacket", "bomber jacket", "leather jacket", "denim jacket", "blazer", "trench coat", "parka", "peacoat"],
+    "Bottoms": ["jeans", "chinos", "cargo pants", "joggers", "trousers", "dress trousers", "shorts"],
+    "Suits & Formalwear": ["suit", "tuxedo", "dress trousers"],
+    "Footwear": ["sneakers", "running shoes", "boots", "loafers", "dress shoes"]
+  },
+  "materials": {
+    "jeans": "denim",
+    "chinos": "cotton",
+    "hoodie": "fleece",
+    "sweatshirt": "cotton-blend",
+    "trench coat": "cotton",
+    "peacoat": "wool",
+    "polo shirt": "pique cotton",
+    "dress trousers": "wool",
+    "loafers": "suede",
+    "leather jacket": "leather",
+    "tuxedo": "wool",
+    "sneakers": "leather",
+    "running shoes": "mesh"
+  }
+}

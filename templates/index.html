@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wardrobe Segmentation</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <h1>👕 My Wardrobe</h1>
+
+  <!-- Upload Button -->
+  <label for="imageUpload" class="upload-button">Choose Image</label>
+  <input type="file" id="imageUpload" accept="image/*">
+
+  <!-- New Buttons -->
+  <div class="button-container">
+    <button id="deselect-button" class="secondary-button">Deselect All</button>
+    <button id="save-selection-button" class="primary-button">Save Selection</button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loading-spinner"></div>
+
+  <!-- Container for Image and Segmentation -->
+  <div id="segmentation-container">
+    <img id="uploaded-image" src="" alt="Uploaded Image">
+    <svg id="svg-overlay"></svg>
+  </div>
+
+  <h2>My Clothes</h2>
+  <div id="wardrobeGrid"></div>
+
+  <h2>Cutout Image</h2>
+  <div id="cutout-container"></div>
+
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

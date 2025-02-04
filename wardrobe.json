@@ -1,0 +1,186 @@
+{
+    "wardrobe": [
+        {
+            "type": "Bottoms",
+            "items": [
+                {
+                    "item": "chinos",
+                    "color": "khaki",
+                    "material": "cotton",
+                    "image": "/static/cutouts/clothing_image_shorts.png"
+                },
+                {
+                    "item": "trousers",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_jeans.png"
+                },
+                {
+                    "item": "trousers",
+                    "color": "dark brown",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_joggers.png"
+                }
+            ]
+        },
+        {
+            "type": "Mid Layers",
+            "items": [
+                {
+                    "item": "sweatshirt",
+                    "color": "light gray",
+                    "material": "cotton-blend",
+                    "image": "/static/cutouts/clothing_image_jumper.png"
+                },
+                {
+                    "item": "hoodie",
+                    "color": "dark brown",
+                    "material": "fleece",
+                    "image": "/static/cutouts/clothing_image_hoodie.png"
+                }
+            ]
+        },
+        {
+            "type": "Tops",
+            "items": [
+                {
+                    "item": "T-shirt",
+                    "color": "light gray",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_tshirt.png"
+                },
+                {
+                    "item": "flannel shirt",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                }
+            ]
+        },
+        {
+            "type": "Other",
+            "items": [
+                {
+                    "item": "Tops",
+                    "color": "light gray",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_tshirt.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "light gray",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_tshirt.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "light gray",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_tshirt.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "light gray",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_tshirt.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Mid Layers",
+                    "color": "dark brown",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_hoodie.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "khaki",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_shorts.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "dark brown",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_joggers.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "light gray",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_jumper.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_jeans.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "light gray",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_jumper.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_jeans.png"
+                },
+                {
+                    "item": "Outerwear",
+                    "color": "navy",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_flannel.png"
+                },
+                {
+                    "item": "Tops",
+                    "color": "khaki",
+                    "material": "unknown fabric",
+                    "image": "/static/cutouts/clothing_image_shorts.png"
+                }
+            ]
+        }
+    ]
+}

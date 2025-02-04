@@ -1,0 +1,14 @@
+{
+    "colors": [
+        "black", "white", "gray", "light gray", "dark gray",
+        "red", "dark red", "light red", "burgundy", "maroon",
+        "blue", "dark blue", "light blue", "navy", "sky blue", "teal",
+        "green", "dark green", "light green", "olive", "mint", "forest green",
+        "yellow", "gold", "mustard", "light yellow",
+        "beige", "tan", "khaki", "camel", "light brown", "dark brown",
+        "pink", "light pink", "dark pink", "fuchsia", "salmon",
+        "purple", "light purple", "dark purple", "lavender", "violet",
+        "orange", "light orange", "dark orange", "rust",
+        "turquoise", "cyan", "magenta"
+    ]
+}
