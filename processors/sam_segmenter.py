@@ -10,7 +10,11 @@ class SAMSegmenter:
     def __init__(self, model_path="sam_vit_h_4b8939.pth", cache_dir="cache"):
         """Initialize the SAM model for automatic segmentation and cache masks."""
         self.device = "cpu"
+        if torch.cuda.is_available():
+            self.device = "cuda"
+
         torch.set_default_device(self.device)
+        print("Set default torch device to " + self.device)
         self.cache_dir = cache_dir
         os.makedirs(self.cache_dir, exist_ok=True)
 
