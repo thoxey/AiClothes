@@ -4,6 +4,8 @@ import numpy as np
 import cv2
 from PIL import Image
 from processors.sam_segmenter import SAMSegmenter
+import base64
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -24,6 +26,13 @@ def home():
     return render_template("index.html")
 
 
+def encode_mask_to_base64(mask):
+    """Encodes a NumPy mask as a base64 PNG."""
+    mask_img = Image.fromarray(mask)  # Convert NumPy array to PIL image
+    buffered = BytesIO()
+    mask_img.save(buffered, format="PNG")  # Save as PNG to buffer
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")  # Encode to base64 string
+
 @app.route("/upload", methods=["POST"])
 def upload_image():
     """Handles image upload and segmentation."""
@@ -39,17 +48,60 @@ def upload_image():
     file.save(file_path)
 
     # Process Image
-    _, compound_paths = segmenter.segment_clothing(file_path)
+    union_mask, compound_paths = segmenter.predict_clothing(file_path)
+
+    # Encode mask as base64
+    encoded_mask = encode_mask_to_base64(union_mask)
 
     return jsonify({
         "success": True,
         "file": filename,
-        "polygons": compound_paths  # List of segmented paths
+        "polygons": compound_paths,  # List of segmented paths
+        "mask": encoded_mask  # Send mask as base64 string
     })
-
 
 @app.route("/save-selection", methods=["POST"])
 def save_selection():
+    """Processes the uploaded mask and applies it to the image."""
+    if "mask" not in request.files or "filename" not in request.form:
+        return jsonify({"error": "No mask provided."}), 400
+
+    mask_file = request.files["mask"]
+    filename = request.form["filename"]
+
+    # Load the uploaded image
+    image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    image = Image.open(image_path).convert("RGBA")
+
+    # Load the uploaded mask
+    mask = Image.open(mask_file).convert("L")  # Convert to grayscale
+    mask = mask.resize(image.size)  # Ensure mask size matches image
+
+    # Apply mask to image
+    cutout = apply_mask(image, mask)
+
+    # Save cutout
+    cutout_filename = filename.replace(".jpeg", "_cutout.png")
+    cutout_path = os.path.join(app.config["CUTOUT_FOLDER"], cutout_filename)
+    cutout.save(cutout_path)
+
+    return jsonify({
+        "success": True,
+        "cutout": f"/static/cutouts/{cutout_filename}"
+    })
+
+def apply_mask(image, mask):
+    """Applies a binary mask to an image, making the unselected areas transparent."""
+    img_rgba = np.array(image)
+    mask_array = np.array(mask)
+
+    # Set alpha channel based on mask
+    img_rgba[..., 3] = mask_array  # Directly use the grayscale mask as the alpha channel
+
+    return Image.fromarray(img_rgba)
+
+
+def save_selection_old():
     """Processes selected segments, creates a combined mask, and applies it to the image."""
     data = request.json
     selected_segments = data.get("selectedSegments", [])

@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedSegments = new Set(); // Store selected segments
     let currentFilename = ""; // Store the uploaded filename
 
+    var uploadJson;
+
     // 📂 File upload event
     fileInput.addEventListener('change', function () {
         if (fileInput.files.length > 0) {
@@ -30,14 +32,16 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
+            uploadJson = data;
             // Hide the spinner once done
             loadingSpinner.style.display = 'none';
 
             if (data.success) {
-                currentFilename = data.file; // Store the filename
+                currentFilename = data.file;
                 uploadedImage.src = `/static/uploads/${data.file}`;
                 uploadedImage.onload = function () {
                     updateSVGOverlay(data.polygons);
+                    displayMask(data.mask);  // Display the mask
                 };
             } else {
                 alert('Upload failed: ' + data.error);
@@ -48,6 +52,20 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('An error occurred while uploading.');
             loadingSpinner.style.display = 'none';
         });
+    }
+
+    function displayMask(base64Mask) {
+        const maskImg = new Image();
+        maskImg.src = `data:image/png;base64,${base64Mask}`;
+        maskImg.style.position = "absolute";
+        maskImg.style.top = uploadedImage.offsetTop + "px";
+        maskImg.style.left = uploadedImage.offsetLeft + "px";
+        maskImg.style.width = uploadedImage.width + "px";
+        maskImg.style.height = uploadedImage.height + "px";
+        maskImg.style.opacity = 0.5; // Adjust opacity as needed
+
+        // Add mask to the UI
+        document.body.appendChild(maskImg);
     }
 
     function updateSVGOverlay(svgPaths) {
@@ -92,25 +110,39 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        let selectedPaths = [];
+        // Create an empty mask the same size as the uploaded image
+        const canvas = document.createElement('canvas');
+        canvas.width = uploadedImage.naturalWidth;
+        canvas.height = uploadedImage.naturalHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Fill selected segments on the canvas
+        ctx.fillStyle = 'white'; // Mask will be white on black background
         selectedSegments.forEach(segment => {
-            selectedPaths.push(segment.getAttribute("d"));
+            const path = new Path2D(segment.getAttribute("d"));
+            ctx.fill(path);
         });
 
-        fetch('/save-selection', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ selectedSegments: selectedPaths, filename: currentFilename })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                displayCutout(data.cutout);
-            } else {
-                alert('Error saving selection.');
-            }
-        })
-        .catch(err => console.error('Save Error:', err));
+        // Convert mask to image data
+        canvas.toBlob(function (blob) {
+            const formData = new FormData();
+            formData.append('mask', blob, 'mask.png');
+            formData.append('filename', currentFilename);
+
+            fetch('/save-selection', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayCutout(data.cutout);
+                } else {
+                    alert('Error saving selection.');
+                }
+            })
+            .catch(err => console.error('Save Error:', err));
+        }, 'image/png');
     });
 
     function displayCutout(cutoutUrl) {

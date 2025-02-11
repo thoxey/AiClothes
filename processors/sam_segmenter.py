@@ -3,8 +3,9 @@ import torch
 import urllib.request
 import numpy as np
 import cv2
-from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+from segment_anything import sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
 from PIL import Image
+import time
 
 class SAMSegmenter:
     def __init__(self, model_path="sam_vit_h_4b8939.pth", cache_dir="cache"):
@@ -31,8 +32,13 @@ class SAMSegmenter:
         stability_score_thresh=0.92,
         crop_n_layers=1,
         crop_n_points_downscale_factor=2,
-        min_mask_region_area=100,  # Requires open-cv to run post-processing
-)
+        min_mask_region_area=100)  # Requires open-cv to run post-processing
+
+        model_type = "vit_h"
+        device = "cuda"
+        sam = sam_model_registry["vit_h"](checkpoint=model_path).to(self.device)
+        sam.to(device=device)
+        self.predictor = SamPredictor(sam)
 
     def download_sam_model(self, model_path):
         url = "https://dl.fbaipublicfiles.com/segment-anything/sam_vit_h_4b8939.pth"
@@ -50,6 +56,52 @@ class SAMSegmenter:
         # Begin with a Move command and then Line commands; close with Z.
         path_str = "M " + " ".join(f"{p[0]},{p[1]}" for p in pts) + " Z"
         return path_str
+
+    def predict_clothing(self, filename):
+        start_time = time.time()
+        image = cv2.imread(filename)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        self.predictor.set_image(image)
+
+        input_point = np.array([[image.shape[1]/2, image.shape[0]/2]])
+        input_label = np.array([1])
+
+        masks, scores, logits = self.predictor.predict(
+            point_coords=input_point,
+            point_labels=input_label,
+            multimask_output=True,
+        )
+
+        if not masks.any():
+            print(f"⚠️ No masks found for {filename}, falling back to bounding box.")
+            return None, []
+
+        masks = [mask.astype(np.uint8) * 255 for mask in masks]
+        # Process masks into SVG-compatible contours
+        compound_paths = []
+        union_mask = np.zeros_like(masks[0])
+
+        for mask in masks:
+            union_mask = cv2.bitwise_or(union_mask, mask)
+
+            # Find contours
+            contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            if hierarchy is not None:
+                hierarchy = hierarchy[0]  # shape: (num_contours, 4)
+                for i, h in enumerate(hierarchy):
+                    if h[3] == -1:  # Outer contour
+                        outer_path = self.contour_to_path_str(contours[i])
+                        inner_paths = []
+                        for j, h2 in enumerate(hierarchy):
+                            if h2[3] == i:  # Inner contour
+                                inner_paths.append(self.contour_to_path_str(contours[j]))
+                        compound_path = outer_path + (" " + " ".join(inner_paths) if inner_paths else "")
+                        compound_paths.append(compound_path)
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Elapsed time: {elapsed_time:.6f} seconds")
+        return union_mask, compound_paths
 
     def segment_clothing(self, filename):
         """

@@ -22,7 +22,8 @@ class ImageProcessor:
             mask = np.load(mask_cache_path)
         else:
             print(f"🔍 Running SAM segmentation for {filename}")
-            mask = segmenter.segment_clothing(image, filename)
+            #mask = segmenter.segment_clothing(image, filename)
+            mask = segmenter.predict_clothing(image, filename)
 
         # ✅ Convert image to OpenCV format (BGR)
         img_bgr = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
