@@ -35,17 +35,18 @@ class SAMSegmenter:
         min_mask_region_area=100)  # Requires open-cv to run post-processing
 
         model_type = "vit_h"
-        device = "cuda"
         sam = sam_model_registry["vit_h"](checkpoint=model_path).to(self.device)
-        sam.to(device=device)
+        sam.to(device= self.device)
         self.predictor = SamPredictor(sam)
 
-    def download_sam_model(self, model_path):
+    @staticmethod
+    def download_sam_model(model_path):
         url = "https://dl.fbaipublicfiles.com/segment-anything/sam_vit_h_4b8939.pth"
         urllib.request.urlretrieve(url, model_path)
         print(f"Download complete: {model_path}")
 
-    def contour_to_path_str(self, contour):
+    @staticmethod
+    def contour_to_path_str(contour):
         """Convert a single contour (Nx1x2 array) into an SVG path string."""
         # Remove the extra dimensions and ensure we have a list of [x, y] points.
         pts = contour.squeeze()

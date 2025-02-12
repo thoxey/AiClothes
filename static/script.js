@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedSegments = new Set(); // Store selected segments
     let currentFilename = ""; // Store the uploaded filename
 
-    var uploadJson;
+    let uploadedMask = null; // Store mask globally
+
 
     // 📂 File upload event
     fileInput.addEventListener('change', function () {
@@ -32,16 +33,20 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            uploadJson = data;
             // Hide the spinner once done
             loadingSpinner.style.display = 'none';
 
             if (data.success) {
                 currentFilename = data.file;
                 uploadedImage.src = `/static/uploads/${data.file}`;
+
+                // Store the mask globally for later use
+                uploadedMask = data.mask;
+
                 uploadedImage.onload = function () {
                     updateSVGOverlay(data.polygons);
-                    displayMask(data.mask);  // Display the mask
+                    // Uncomment to verify the mask visually
+                    // displayMask(data.mask);
                 };
             } else {
                 alert('Upload failed: ' + data.error);
@@ -53,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
             loadingSpinner.style.display = 'none';
         });
     }
+
 
     function displayMask(base64Mask) {
         const maskImg = new Image();
@@ -105,44 +111,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 💾 Save Selection & Process Cutout
     saveSelectionButton.addEventListener('click', function () {
-        if (selectedSegments.size === 0) {
-            alert('No segments selected!');
+        if (!uploadedMask) {
+            alert('No mask available! Ensure you upload an image first.');
             return;
         }
 
-        // Create an empty mask the same size as the uploaded image
-        const canvas = document.createElement('canvas');
-        canvas.width = uploadedImage.naturalWidth;
-        canvas.height = uploadedImage.naturalHeight;
-        const ctx = canvas.getContext('2d');
+        // Instead of fetching the base64 as a URL, send it directly
+        const requestBody = {
+            filename: currentFilename,
+            maskBase64: uploadedMask, // This is already the base64 string
+        };
 
-        // Fill selected segments on the canvas
-        ctx.fillStyle = 'white'; // Mask will be white on black background
-        selectedSegments.forEach(segment => {
-            const path = new Path2D(segment.getAttribute("d"));
-            ctx.fill(path);
-        });
-
-        // Convert mask to image data
-        canvas.toBlob(function (blob) {
-            const formData = new FormData();
-            formData.append('mask', blob, 'mask.png');
-            formData.append('filename', currentFilename);
-
-            fetch('/save-selection', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    displayCutout(data.cutout);
-                } else {
-                    alert('Error saving selection.');
-                }
-            })
-            .catch(err => console.error('Save Error:', err));
-        }, 'image/png');
+        fetch('/save-selection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Save selection response:", data);
+            if (data.success) {
+                displayCutout(data.cutout);
+            } else {
+                alert('Error saving selection.');
+            }
+        })
+        .catch(err => console.error('Save Error:', err));
     });
 
     function displayCutout(cutoutUrl) {

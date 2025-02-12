@@ -62,33 +62,52 @@ def upload_image():
 
 @app.route("/save-selection", methods=["POST"])
 def save_selection():
-    """Processes the uploaded mask and applies it to the image."""
-    if "mask" not in request.files or "filename" not in request.form:
-        return jsonify({"error": "No mask provided."}), 400
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data sent"}), 400
 
-    mask_file = request.files["mask"]
-    filename = request.form["filename"]
+    filename = data.get("filename")
+    mask_base64 = data.get("maskBase64")
+    if not filename or not mask_base64:
+        return jsonify({"error": "Missing filename or maskBase64"}), 400
 
-    # Load the uploaded image
     image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    image = Image.open(image_path).convert("RGBA")
+    if not os.path.exists(image_path):
+        return jsonify({"error": "Image not found"}), 404
 
-    # Load the uploaded mask
-    mask = Image.open(mask_file).convert("L")  # Convert to grayscale
-    mask = mask.resize(image.size)  # Ensure mask size matches image
+    try:
+        # Load the original image
+        image = Image.open(image_path).convert("RGBA")
+        image_data = np.array(image)
 
-    # Apply mask to image
-    cutout = apply_mask(image, mask)
+        # 1. Decode the base64 string -> PNG bytes
+        mask_bytes = base64.b64decode(mask_base64)
 
-    # Save cutout
-    cutout_filename = filename.replace(".jpeg", "_cutout.png")
-    cutout_path = os.path.join(app.config["CUTOUT_FOLDER"], cutout_filename)
-    cutout.save(cutout_path)
+        # 2. Open it as a Pillow image (which decompresses the PNG)
+        from io import BytesIO
+        mask_image = Image.open(BytesIO(mask_bytes)).convert("L")
 
-    return jsonify({
-        "success": True,
-        "cutout": f"/static/cutouts/{cutout_filename}"
-    })
+        # 3. Resize mask to match the original image (if needed)
+        mask_image = mask_image.resize((image.width, image.height))
+
+        # 4. Convert to a NumPy array of 0/255
+        mask_data = np.array(mask_image)
+
+        # 5. Apply transparency: 0 => Transparent, 255 => Opaque
+        image_data[:, :, 3] = np.where(mask_data == 0, 0, 255)
+
+        # 6. Convert back to an Image
+        cutout = Image.fromarray(image_data)
+        cutout_filename = filename.rsplit(".", 1)[0] + "_cutout.png"
+        cutout_path = os.path.join(app.config["CUTOUT_FOLDER"], cutout_filename)
+        cutout.save(cutout_path)
+
+        return jsonify({"success": True, "cutout": f"/static/cutouts/{cutout_filename}"})
+
+    except Exception as e:
+        print("Error processing mask:", e)
+        return jsonify({"error": f"Failed to process mask: {str(e)}"}), 500
+
 
 def apply_mask(image, mask):
     """Applies a binary mask to an image, making the unselected areas transparent."""
