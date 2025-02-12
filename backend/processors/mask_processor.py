@@ -24,7 +24,7 @@ class MaskProcessor:
         return np.frombuffer(raw_bytes, dtype=dtype).reshape(shape)
 
     @staticmethod
-    def apply(image_path: str, encoded_mask: str) -> Image.Image:
+    def apply(image: Image, encoded_mask: str) -> Image.Image:
         """
         Loads the original image as RGBA, decodes the zlib-compressed, Base64-encoded mask,
         resizes if necessary, and applies it to the image’s alpha channel:
@@ -32,7 +32,6 @@ class MaskProcessor:
         Returns the resulting PIL Image.
         """
         # 1. Load the original image as RGBA
-        image = Image.open(image_path).convert("RGBA")
         image_data = np.array(image)
 
         # 2. Decode the mask to match image dimensions
