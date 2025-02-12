@@ -113,7 +113,7 @@ input[type="file"] {
 
 /* 🌟 Segments */
 svg .segment {
-    fill-opacity: 0.4;
+    fill-opacity: 0.1;
     stroke: black;
     stroke-width: 2px;
     stroke-opacity: 1;
@@ -126,14 +126,14 @@ svg .segment {
 svg .segment:hover {
     stroke: blue;
     stroke-width: 3px;
-    fill-opacity: 0.5;
+    fill-opacity: 0.25;
 }
 
 /* Selected */
 svg .segment.selected {
     stroke: yellow;
     stroke-width: 4px;
-    fill-opacity: 0.7;
+    fill-opacity: 0.5;
 }
 
 /* Click Animation */
@@ -183,4 +183,23 @@ button {
 
 .secondary-button:hover {
     background: #f4f4ff;
+}
+
+.wardrobe-container {
+  display: flex;             /* The secret sauce to side-by-side */
+  min-height: 75vh;         /* Optional: fill the browser height */
+}
+
+.wardrobe-left {
+  flex: 2;                   /* Takes up 2x space compared to the right side */
+  padding: 20px;
+  /* Add any background or other styles you want */
+  background-color: #f8f9fc;
+}
+
+.wardrobe-right {
+  flex: 1;                   /* Takes up 1x space, smaller panel */
+  padding: 20px;
+  /* Different background for contrast, maybe? */
+  background-color: #ffffff;
 }
