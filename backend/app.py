@@ -1,15 +1,19 @@
 from flask import Flask, request, jsonify, send_from_directory
-import os
 import base64
 import io
 from PIL import Image
 
 from backend.processors.mask_processor import MaskProcessor
 from backend.processors.sam_segmenter import SAMSegmenter
+from backend.processors.image_processor import ImageProcessor
+from backend.processors.clip_processor import CLIPProcessor
+
 
 app = Flask(__name__, static_folder='frontend/build')
 
 segmenter = SAMSegmenter()
+image_processor = ImageProcessor()
+clip_processor = CLIPProcessor()
 
 @app.route("/")
 def serve_index():
@@ -92,6 +96,37 @@ def save_selection():
     except Exception as e:
         print("Error processing mask:", e)
         return jsonify({"error": f"Failed to process mask: {str(e)}"}), 500
+
+@app.route("/identify-image", methods=["POST"])
+def identify_image():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data sent"}), 400
+
+    image_base64 = data.get("cutoutBase64")
+    if not image_base64:
+        return jsonify({"error": "Missing cutoutBase64"}), 400
+
+    try:
+        # 1. Decode the image
+        image_bytes = base64.b64decode(image_base64)
+        # Create a PIL Image from the image bytes
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+
+        # 2. Process the image with the CLIP model
+        clothing_type = clip_processor.classify_clothing(image)
+
+        # 3. Process the image with the Image Processor
+        dominant_color = clip_processor.classify_color(image)
+
+        return jsonify({"success": True, "clothingType": clothing_type, "dominantColor": dominant_color})
+
+    except Exception as e:
+        print("Error processing image:", e)
+        return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

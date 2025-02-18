@@ -9,6 +9,8 @@ function App() {
   const [polygons, setPolygons] = useState([]);         // store segmentation polygons
   const [cutoutBase64, setCutoutBase64] = useState(""); // store final cutout
   const [loading, setLoading] = useState(false);
+  const [identifiedClothing, setIdentifiedClothing] = useState(null); // Store identified clothing name and colour
+
 
   // Refs for DOM elements (optional)
   const fileInputRef = useRef(null);
@@ -83,6 +85,38 @@ function App() {
       }
     } catch (err) {
       console.error("Save Error:", err);
+      setLoading(false);
+    }
+  };
+
+  const handleIdentifyImage = async () => {
+    if(!cutoutBase64) {
+      alert("No cutout image available!");
+        return;
+    }
+    try {
+      setLoading(true);
+      const requestBody = {
+        cutoutBase64
+      };
+      const response = await fetch("/identify-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+      const data = await response.json();
+      setLoading(false);
+      if (data.success) {
+        setIdentifiedClothing({
+          type: data.clothingType,
+          colour: data.dominantColor
+        });
+      } else {
+        alert("Identification failed: " + data.error);
+      }
+    } catch (err) {
+      console.error("Error identifying image:", err);
+      alert("An error occurred while identifying.");
       setLoading(false);
     }
   };
@@ -178,6 +212,9 @@ function App() {
           <button onClick={handleSaveSelection} className="primary-button">
             Save Selection
           </button>
+          <button onClick={handleIdentifyImage} className="primary-button">
+            Identify Clothing
+          </button>
         </div>
       </div>
 
@@ -189,7 +226,15 @@ function App() {
         <h2>Cutout Image</h2>
         <div id="cutout-container">
           {cutoutBase64 && (
-            <img src={getImageSrc(cutoutBase64)} alt="Cutout" />
+            <>
+              <img src={getImageSrc(cutoutBase64)} alt="Cutout" />
+              {identifiedClothing && (
+                <div className="clothing-info">
+                  <p><strong>Type:</strong> {identifiedClothing.type}</p>
+                  <p><strong>Colour:</strong> {identifiedClothing.colour}</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
