@@ -121,6 +121,42 @@ function App() {
     }
   };
 
+
+  const handleSaveClothing = async () => {
+    if(!cutoutBase64) {
+      alert("No cutout image available!");
+        return;
+    }
+    if(!identifiedClothing) {
+      alert("No clothing identified!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const requestBody = {
+        cutoutBase64,
+        clothingType: identifiedClothing.type,
+        dominantColor: identifiedClothing.colour
+      };
+      const response = await fetch("/save-to-wardrobe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+      const data = await response.json();
+      setLoading(false);
+      if (data.success) {
+        //Display success message
+      } else {
+        alert("Saving failed: " + data.error);
+      }
+    } catch (err) {
+      console.error("Error saving clothing:", err);
+      alert("An error occurred while saving.");
+      setLoading(false);
+    }
+  };
   // Deselect polygons
   const handleDeselectAll = () => {
     setSelectedSegments(new Set());
@@ -214,6 +250,9 @@ function App() {
           </button>
           <button onClick={handleIdentifyImage} className="primary-button">
             Identify Clothing
+          </button>
+          <button onClick={handleSaveClothing} className="primary-button">
+            Save to Wardrobe
           </button>
         </div>
       </div>

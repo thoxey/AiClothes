@@ -1,3 +1,4 @@
+from tinydb import TinyDB
 from flask import Flask, request, jsonify, send_from_directory
 import base64
 import io
@@ -14,6 +15,9 @@ app = Flask(__name__, static_folder='frontend/build')
 segmenter = SAMSegmenter()
 image_processor = ImageProcessor()
 clip_processor = CLIPProcessor()
+
+db = TinyDB("clothing_db.json")
+clothing_table = db.table("clothing_items")
 
 @app.route("/")
 def serve_index():
@@ -125,8 +129,54 @@ def identify_image():
         print("Error processing image:", e)
         return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
 
+@app.route("/save-to-wardrobe", methods=["POST"])
+def save_to_wardrobe():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data sent"}), 400
+
+    image_base64 = data.get("cutoutBase64")
+    if not image_base64:
+        return jsonify({"error": "Missing cutoutBase64"}), 400
+
+    item_type = data.get("clothingType")
+    if not item_type:
+        return jsonify({"error": "Missing clothingType"}), 400
+
+    dominant_color = data.get("dominantColor")
+    if not dominant_color:
+        return jsonify({"error": "Missing dominantColor"}), 400
+
+    try:
+        document = jsonify({"success": True, "clothingType": item_type, "dominantColor": dominant_color, "imageBase64": image_base64})
+        clothing_table.insert(document.get_json())
+        return jsonify({"success": True, "clothingType": item_type, "dominantColor": dominant_color, "imageBase64": image_base64})
+
+    except Exception as e:
+        print("Error saving image:", e)
+        return jsonify({"error": f"Failed to save image: {str(e)}"}), 500
 
 
+@app.route("/clothing-items", methods=["GET"])
+def get_clothing_items():
+    # Fetch all clothing items from the database.
+    items = clothing_table.all()
+    return jsonify(items)
+
+@app.route("/clothing-items", methods=["POST"])
+def add_clothing_item():
+    data = request.get_json()
+    # Check for all required fields
+    required_fields = ["clothingType", "dominantColor", "imageBase64" ]
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing one or more required fields."}), 400
+
+    # Insert the item into TinyDB
+    clothing_table.insert(data)
+    return jsonify(data), 201
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
