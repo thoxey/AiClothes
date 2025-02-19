@@ -203,3 +203,58 @@ button {
   /* Different background for contrast, maybe? */
   background-color: #ffffff;
 }
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  padding: 1rem;
+}
+
+/* Timeline Bar Styles */
+.timeline-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: #f1f1f1;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+}
+
+.timeline-stage {
+  background: #ccc;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.timeline-stage.active {
+  background: #007bff;
+  colour: #fff;
+}
+
+.timeline-stage.completed {
+  background: #28a745;
+  colour: #fff;
+}
+
+.timeline-stage.pending {
+  background: #ccc;
+  colour: #000;
+}
+
+.timeline-connector {
+  width: 50px;
+  height: 4px;
+  background: #ccc;
+  margin: 0 0.5rem;
+}

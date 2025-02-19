@@ -1,27 +1,37 @@
-// src/App.js
 import React, { useState, useRef } from "react";
-import "./App.css"; // or Wardrobe.css
+import "./App.css";
+import TimelineBar from "./components/TimelineBar";
+import UploadStage from "./components/UploadStage";
+import CutoutStage from "./components/CutoutStage";
+import IdentifyStage from "./components/IdentifyStage";
+import SaveStage from "./components/SaveStage";
+
+const stages = [
+  "Upload & Segmentation",
+  "Cutout Generation",
+  "Clothing Identification",
+  "Save to Wardrobe"
+];
 
 function App() {
+  const [currentStage, setCurrentStage] = useState(0);
   const [selectedSegments, setSelectedSegments] = useState(new Set());
-  const [imageBase64, setImageBase64] = useState("");   // store original uploaded image
-  const [maskBase64, setMaskBase64] = useState("");     // store returned mask from Flask
-  const [polygons, setPolygons] = useState([]);         // store segmentation polygons
-  const [cutoutBase64, setCutoutBase64] = useState(""); // store final cutout
+  const [imageBase64, setImageBase64] = useState("");
+  const [maskBase64, setMaskBase64] = useState("");
+  const [polygons, setPolygons] = useState([]);
+  const [cutoutBase64, setCutoutBase64] = useState("");
   const [loading, setLoading] = useState(false);
-  const [identifiedClothing, setIdentifiedClothing] = useState(null); // Store identified clothing name and colour
+  const [identifiedClothing, setIdentifiedClothing] = useState(null);
 
-
-  // Refs for DOM elements (optional)
+  // Refs for DOM elements in image stages
   const fileInputRef = useRef(null);
   const imageRef = useRef(null);
   const svgOverlayRef = useRef(null);
 
-  // Convert user’s file to base64
+  // Stage 0: Upload & Segmentation
   const handleFileChange = async (e) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
-
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const base64String = ev.target.result.split(",")[1];
@@ -31,7 +41,6 @@ function App() {
     reader.readAsDataURL(file);
   };
 
-  // POST the base64 image to Flask
   const uploadImageToFlask = async (base64String) => {
     try {
       setLoading(true);
@@ -42,7 +51,6 @@ function App() {
       });
       const data = await response.json();
       setLoading(false);
-
       if (data.success) {
         setMaskBase64(data.mask);
         setPolygons(data.polygons || []);
@@ -56,19 +64,15 @@ function App() {
     }
   };
 
-  // Apply mask with /save-selection
-  const handleSaveSelection = async () => {
+  // Stage 1: Generate Cutout
+  const generateCutout = async () => {
     if (!maskBase64 || !imageBase64) {
       alert("No image or mask available!");
       return;
     }
-
     try {
       setLoading(true);
-      const requestBody = {
-        imageBase64,
-        maskBase64,
-      };
+      const requestBody = { imageBase64, maskBase64 };
       const response = await fetch("/save-selection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -76,29 +80,27 @@ function App() {
       });
       const data = await response.json();
       setLoading(false);
-
       if (data.success) {
-        // The server returns cutout as base64
         setCutoutBase64(data.cutoutBase64);
       } else {
-        alert("Error saving selection: " + data.error);
+        alert("Error generating cutout: " + data.error);
       }
     } catch (err) {
-      console.error("Save Error:", err);
+      console.error("Generate Cutout Error:", err);
+      alert("An error occurred while generating the cutout.");
       setLoading(false);
     }
   };
 
-  const handleIdentifyImage = async () => {
-    if(!cutoutBase64) {
+  // Stage 2: Clothing Identification
+  const identifyClothingFunc = async () => {
+    if (!cutoutBase64) {
       alert("No cutout image available!");
-        return;
+      return;
     }
     try {
       setLoading(true);
-      const requestBody = {
-        cutoutBase64
-      };
+      const requestBody = { cutoutBase64 };
       const response = await fetch("/identify-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,7 +111,7 @@ function App() {
       if (data.success) {
         setIdentifiedClothing({
           type: data.clothingType,
-          colour: data.dominantColor
+          colour: data.dominantColor,
         });
       } else {
         alert("Identification failed: " + data.error);
@@ -121,23 +123,22 @@ function App() {
     }
   };
 
-
-  const handleSaveClothing = async () => {
-    if(!cutoutBase64) {
+  // Stage 3: Save Clothing to Wardrobe
+  const saveClothing = async () => {
+    if (!cutoutBase64) {
       alert("No cutout image available!");
-        return;
+      return;
     }
-    if(!identifiedClothing) {
+    if (!identifiedClothing) {
       alert("No clothing identified!");
       return;
     }
-
     try {
       setLoading(true);
       const requestBody = {
         cutoutBase64,
         clothingType: identifiedClothing.type,
-        dominantColor: identifiedClothing.colour
+        dominantColor: identifiedClothing.colour,
       };
       const response = await fetch("/save-to-wardrobe", {
         method: "POST",
@@ -147,7 +148,7 @@ function App() {
       const data = await response.json();
       setLoading(false);
       if (data.success) {
-        //Display success message
+        alert("Clothing saved successfully!");
       } else {
         alert("Saving failed: " + data.error);
       }
@@ -157,28 +158,34 @@ function App() {
       setLoading(false);
     }
   };
-  // Deselect polygons
-  const handleDeselectAll = () => {
-    setSelectedSegments(new Set());
+
+  // Confirm action for API-calling stages
+  const handleConfirmStage = async () => {
+    if (currentStage === 1 && !cutoutBase64) {
+      await generateCutout();
+    } else if (currentStage === 2 && !identifiedClothing) {
+      await identifyClothingFunc();
+    } else if (currentStage === 3) {
+      await saveClothing();
+    }
+    if (currentStage < stages.length - 1) {
+      setCurrentStage((prev) => prev + 1);
+    } else {
+      alert("Process complete!");
+    }
   };
 
-  // Render polygons
+  // Render overlay polygons on the image
   const renderPolygons = () => {
     return polygons.map((pathStr, idx) => {
       const handleClick = () => {
         setSelectedSegments((prev) => {
           const newSet = new Set(prev);
-          if (newSet.has(pathStr)) {
-            newSet.delete(pathStr);
-          } else {
-            newSet.add(pathStr);
-          }
+          newSet.has(pathStr) ? newSet.delete(pathStr) : newSet.add(pathStr);
           return newSet;
         });
       };
-
       const isSelected = selectedSegments.has(pathStr);
-
       return (
         <path
           key={idx}
@@ -191,92 +198,65 @@ function App() {
     });
   };
 
-  // Helper to create a data URL from base64
-  const getImageSrc = (base64) => {
-    return base64 ? `data:image/png;base64,${base64}` : "";
+  // Render the proper stage based on currentStage
+  const renderStageContent = () => {
+    switch (currentStage) {
+      case 0:
+        return (
+          <UploadStage
+            imageBase64={imageBase64}
+            fileInputRef={fileInputRef}
+            imageRef={imageRef}
+            svgOverlayRef={svgOverlayRef}
+            renderPolygons={renderPolygons}
+            onFileChange={handleFileChange}
+            onConfirm={() => setCurrentStage((prev) => prev + 1)}
+          />
+        );
+      case 1:
+        return (
+          <CutoutStage
+            imageBase64={imageBase64}
+            imageRef={imageRef}
+            svgOverlayRef={svgOverlayRef}
+            renderPolygons={renderPolygons}
+            cutoutBase64={cutoutBase64}
+            loading={loading}
+            onConfirm={handleConfirmStage}
+          />
+        );
+      case 2:
+        return (
+          <IdentifyStage
+            cutoutBase64={cutoutBase64}
+            identifiedClothing={identifiedClothing}
+            loading={loading}
+            onConfirm={handleConfirmStage}
+          />
+        );
+      case 3:
+        return (
+          <SaveStage
+            cutoutBase64={cutoutBase64}
+            identifiedClothing={identifiedClothing}
+            loading={loading}
+            onConfirm={handleConfirmStage}
+          />
+        );
+      default:
+        return (
+          <div className="stage-container">
+            <h1>Process Complete!</h1>
+          </div>
+        );
+    }
   };
 
   return (
-    <div className="wardrobe-container">
-      {/* Left side */}
-      <div className="wardrobe-left">
-        <h1>👕 My Wardrobe</h1>
-
-        <label className="upload-button" htmlFor="imageUpload">
-          Choose Image
-        </label>
-        <input
-          type="file"
-          id="imageUpload"
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-        />
-
-        {loading && <div id="loading-spinner">Loading...</div>}
-
-        {/* Show the uploaded image with polygon overlays */}
-        {imageBase64 && (
-          <div style={{ position: "relative" }}>
-            <img
-              id="uploaded-image"
-              src={getImageSrc(imageBase64)}
-              alt="Uploaded"
-              ref={imageRef}
-            />
-            <svg
-              id="svg-overlay"
-              ref={svgOverlayRef}
-              style={{ position: "absolute", top: 0, left: 0 }}
-              width="100%"
-              height="100%"
-              viewBox={`0 0 ${
-                imageRef.current?.naturalWidth || 100
-              } ${imageRef.current?.naturalHeight || 100}`}
-            >
-              {renderPolygons()}
-            </svg>
-          </div>
-        )}
-
-        {/* Buttons */}
-        <div className="button-container">
-          <button onClick={handleDeselectAll} className="secondary-button">
-            Deselect All
-          </button>
-          <button onClick={handleSaveSelection} className="primary-button">
-            Save Selection
-          </button>
-          <button onClick={handleIdentifyImage} className="primary-button">
-            Identify Clothing
-          </button>
-          <button onClick={handleSaveClothing} className="primary-button">
-            Save to Wardrobe
-          </button>
-        </div>
-      </div>
-
-      {/* Right side */}
-      <div className="wardrobe-right">
-        <h2>My Clothes</h2>
-        <div id="wardrobeGrid"></div>
-
-        <h2>Cutout Image</h2>
-        <div id="cutout-container">
-          {cutoutBase64 && (
-            <>
-              <img src={getImageSrc(cutoutBase64)} alt="Cutout" />
-              {identifiedClothing && (
-                <div className="clothing-info">
-                  <p><strong>Type:</strong> {identifiedClothing.type}</p>
-                  <p><strong>Colour:</strong> {identifiedClothing.colour}</p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+    <div className="app-container">
+      {loading && <div id="loading-spinner">Loading...</div>}
+      <div className="content">{renderStageContent()}</div>
+      <TimelineBar stages={stages} currentStage={currentStage} />
     </div>
   );
 }
