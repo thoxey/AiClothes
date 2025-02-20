@@ -1,15 +1,22 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { Card, Button, Spin } from "antd";
 
 const StageWrapper = ({ title, children, confirmLabel, onConfirm, loading }) => {
   return (
-    <div className="stage-container">
-      <h1>{title}</h1>
-      <div className="stage-content">{children}</div>
-      <button onClick={onConfirm} className="primary-button" style={{ marginTop: "1rem" }}>
-        {loading ? "Processing..." : confirmLabel}
-      </button>
-    </div>
+    <Card title={title} style={{ marginTop: "1rem" }}>
+      <Spin spinning={loading} tip="Processing...">
+        <div className="stage-content">{children}</div>
+        <Button
+          type="primary"
+          onClick={onConfirm}
+          loading={loading}
+          style={{ marginTop: "1rem" }}
+        >
+          {confirmLabel}
+        </Button>
+      </Spin>
+    </Card>
   );
 };
 

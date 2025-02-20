@@ -3,7 +3,12 @@ import StageWrapper from "./StageWrapper";
 
 const getImageSrc = (base64) => (base64 ? `data:image/png;base64,${base64}` : "");
 
-const IdentifyStage = ({ cutoutBase64, identifiedClothing, loading, onConfirm }) => {
+const IdentifyStage = ({
+  cutoutBase64,
+  identifiedClothing,
+  loading,
+  onConfirm,
+}) => {
   return (
     <StageWrapper
       title="Identify Clothing"

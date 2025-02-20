@@ -1,25 +1,47 @@
 import React, { useState } from "react";
-import "./App.css";
+import { Layout, Menu } from "antd";
+
+import "./App.css"; // Your custom styles
 import Wardrobe from "./components/Wardrobe";
 import AddClothingFlow from "./components/AddClothingFlow";
 
+const { Header, Content } = Layout;
+
 function App() {
-  // Use a page state: "wardrobe" shows the main display, "add" shows the add flow.
   const [page, setPage] = useState("wardrobe");
 
-  // When the add flow is complete, return to the wardrobe page.
   const handleFlowComplete = () => {
     setPage("wardrobe");
   };
 
   return (
-    <div className="app-container">
-      {page === "wardrobe" ? (
-        <Wardrobe onAdd={() => setPage("add")} />
-      ) : (
-        <AddClothingFlow onFlowComplete={handleFlowComplete} />
-      )}
-    </div>
+    <Layout className="app-layout">
+      <Header>
+        {/* The top navigation menu with two items. */}
+        <Menu
+          theme="dark"
+          mode="horizontal"
+          selectedKeys={[page]}
+          style={{ lineHeight: "64px" }}
+        >
+          <Menu.Item key="wardrobe" onClick={() => setPage("wardrobe")}>
+            Wardrobe
+          </Menu.Item>
+          <Menu.Item key="add" onClick={() => setPage("add")}>
+            Add Clothing
+          </Menu.Item>
+        </Menu>
+      </Header>
+
+      {/* Main content area */}
+      <Content style={{ padding: "24px" }}>
+        {page === "wardrobe" ? (
+          <Wardrobe onAdd={() => setPage("add")} />
+        ) : (
+          <AddClothingFlow onFlowComplete={handleFlowComplete} />
+        )}
+      </Content>
+    </Layout>
   );
 }
 

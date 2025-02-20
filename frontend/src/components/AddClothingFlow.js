@@ -5,30 +5,30 @@ import CutoutStage from "./CutoutStage";
 import IdentifyStage from "./IdentifyStage";
 import SaveStage from "./SaveStage";
 
-// Define the stages for the timeline bar.
 const stages = [
   "Upload & Segmentation",
   "Cutout Generation",
   "Clothing Identification",
-  "Save to Wardrobe"
+  "Save to Wardrobe",
 ];
 
 const AddClothingFlow = ({ onFlowComplete }) => {
   const [currentStage, setCurrentStage] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [polygons, setPolygons] = useState([]);
   const [selectedSegments, setSelectedSegments] = useState(new Set());
   const [imageBase64, setImageBase64] = useState("");
   const [maskBase64, setMaskBase64] = useState("");
-  const [polygons, setPolygons] = useState([]);
   const [cutoutBase64, setCutoutBase64] = useState("");
-  const [loading, setLoading] = useState(false);
   const [identifiedClothing, setIdentifiedClothing] = useState(null);
 
-  // Refs for DOM elements in the image stages.
+  // Refs for DOM elements in the image stages
   const fileInputRef = useRef(null);
   const imageRef = useRef(null);
   const svgOverlayRef = useRef(null);
 
-  // Stage 0: Upload & Segmentation
+  // Upload & segmentation
   const handleFileChange = async (e) => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
@@ -51,6 +51,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
       });
       const data = await response.json();
       setLoading(false);
+
       if (data.success) {
         setMaskBase64(data.mask);
         setPolygons(data.polygons || []);
@@ -64,7 +65,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
     }
   };
 
-  // Stage 1: Generate Cutout
+  // Generate cutout
   const generateCutout = async () => {
     if (!maskBase64 || !imageBase64) {
       alert("No image or mask available!");
@@ -92,7 +93,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
     }
   };
 
-  // Stage 2: Clothing Identification
+  // Clothing Identification
   const identifyClothingFunc = async () => {
     if (!cutoutBase64) {
       alert("No cutout image available!");
@@ -108,6 +109,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
       });
       const data = await response.json();
       setLoading(false);
+
       if (data.success) {
         setIdentifiedClothing({
           type: data.clothingType,
@@ -123,7 +125,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
     }
   };
 
-  // Stage 3: Save Clothing to Wardrobe
+  // Save Clothing to Wardrobe
   const saveClothing = async () => {
     if (!cutoutBase64) {
       alert("No cutout image available!");
@@ -147,6 +149,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
       });
       const data = await response.json();
       setLoading(false);
+
       if (data.success) {
         alert("Clothing saved successfully!");
       } else {
@@ -159,7 +162,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
     }
   };
 
-  // Handle confirm button presses for each stage.
+  // Confirm button logic
   const handleConfirmStage = async () => {
     if (currentStage === 1 && !cutoutBase64) {
       await generateCutout();
@@ -171,12 +174,11 @@ const AddClothingFlow = ({ onFlowComplete }) => {
     if (currentStage < stages.length - 1) {
       setCurrentStage((prev) => prev + 1);
     } else {
-      // When the final stage is complete, return to the main Wardrobe page.
-      onFlowComplete();
+      onFlowComplete(); // goes back to Wardrobe
     }
   };
 
-  // Render overlay polygons on the image.
+  // Polygons
   const renderPolygons = () => {
     return polygons.map((pathStr, idx) => {
       const handleClick = () => {
@@ -187,6 +189,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
         });
       };
       const isSelected = selectedSegments.has(pathStr);
+
       return (
         <path
           key={idx}
@@ -211,6 +214,7 @@ const AddClothingFlow = ({ onFlowComplete }) => {
             renderPolygons={renderPolygons}
             onFileChange={handleFileChange}
             onConfirm={() => setCurrentStage((prev) => prev + 1)}
+            loading={loading}
           />
         );
       case 1:
@@ -244,19 +248,14 @@ const AddClothingFlow = ({ onFlowComplete }) => {
           />
         );
       default:
-        return (
-          <div className="stage-container">
-            <h1>Process Complete!</h1>
-          </div>
-        );
+        return <div>Process Complete!</div>;
     }
   };
 
   return (
-    <div className="app-container">
-      {loading && <div id="loading-spinner">Loading...</div>}
-      <div className="content">{renderStageContent()}</div>
+    <div className="content">
       <TimelineBar stages={stages} currentStage={currentStage} />
+      {renderStageContent()}
     </div>
   );
 };

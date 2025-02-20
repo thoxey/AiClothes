@@ -1,30 +1,3 @@
-/* 🌙 Light background with modern UI feel */
-body {
-    font-family: 'Inter', sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-    background-color: #f8f9fc;
-    color: #333;
-}
-
-/* 🎨 Center everything */
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-}
-
-/* 🖼️ Ensure images scale properly */
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
-    border-radius: 12px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-}
-
 /* 🔲 Segmentation Container */
 #segmentation-container {
     position: relative;
@@ -44,73 +17,6 @@ img {
     left: 0;
     pointer-events: none;
 }
-
-/* 📂 Upload Button */
-.upload-button {
-    display: inline-block;
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    border: none;
-    padding: 12px 18px;
-    color: white;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-    font-weight: 500;
-    box-shadow: 0px 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.upload-button:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-    box-shadow: 0px 6px 14px rgba(79, 70, 229, 0.4);
-}
-
-/* Hide default file input */
-input[type="file"] {
-    display: none;
-}
-
-/* ⏳ Spinner */
-#loading-spinner {
-    display: none; /* Hidden by default */
-    margin: 20px auto;
-    border: 4px solid rgba(0, 0, 0, 0.2);
-    border-top: 4px solid #6366f1;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 0.8s linear infinite;
-}
-
-/* 🔄 Spinner animation */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* 📦 Wardrobe Grid */
-#wardrobeGrid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-/* 🎭 Wardrobe Items */
-.wardrobe-item {
-    background: white;
-    padding: 12px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.08);
-    text-align: center;
-    transition: 0.3s ease-in-out;
-}
-
-.wardrobe-item:hover {
-    transform: scale(1.03);
-}
-
 /* 🌟 Segments */
 svg .segment {
     fill-opacity: 0.1;
@@ -135,161 +41,30 @@ svg .segment.selected {
     stroke-width: 4px;
     fill-opacity: 0.5;
 }
+/* App.css */
 
-/* Click Animation */
-@keyframes clickAnimation {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(0.95); }
-    100% { transform: scale(1); }
-}
-
-svg .segment.clicked {
-    animation: clickAnimation 0.2s ease-in-out;
-}
-
-/* 🎨 Button Styling */
-.button-container {
-    margin-top: 20px;
-}
-
-button {
-    border: none;
-    padding: 12px 18px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: 0.3s ease-in-out;
-}
-
-/* Primary Button (e.g., Save Selection) */
-.primary-button {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    color: white;
-    box-shadow: 0px 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.primary-button:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-    box-shadow: 0px 6px 14px rgba(79, 70, 229, 0.4);
-}
-
-/* Secondary Button (e.g., Deselect All) */
-.secondary-button {
-    background: white;
-    color: #4f46e5;
-    border: 2px solid #4f46e5;
-}
-
-.secondary-button:hover {
-    background: #f4f4ff;
-}
-
-.wardrobe-container {
-  display: flex;             /* The secret sauce to side-by-side */
-  min-height: 75vh;         /* Optional: fill the browser height */
-}
-
-.wardrobe-left {
-  flex: 2;                   /* Takes up 2x space compared to the right side */
-  padding: 20px;
-  /* Add any background or other styles you want */
+/* Basic reset and typography */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
   background-color: #f8f9fc;
+  color: #333;
 }
 
-.wardrobe-right {
-  flex: 1;                   /* Takes up 1x space, smaller panel */
-  padding: 20px;
-  /* Different background for contrast, maybe? */
-  background-color: #ffffff;
-}
-
-.app-container {
-  display: flex;
-  flex-direction: column;
+/* Layout overrides or custom additions, if needed */
+.app-layout {
   min-height: 100vh;
 }
 
-.content {
-  flex: 1;
-  padding: 1rem;
+.ant-layout-header {
+  /* Optional: custom background colour or anything else */
+  background: #001529; /* Default AntD dark header color */
 }
 
-/* Timeline Bar Styles */
-.timeline-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: #f1f1f1;
-}
-
-.timeline-item {
-  display: flex;
-  align-items: center;
-}
-
-.timeline-stage {
-  background: #ccc;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.timeline-stage.active {
-  background: #007bff;
-  colour: #fff;
-}
-
-.timeline-stage.completed {
-  background: #28a745;
-  colour: #fff;
-}
-
-.timeline-stage.pending {
-  background: #ccc;
-  colour: #000;
-}
-
-.timeline-connector {
-  width: 50px;
-  height: 4px;
-  background: #ccc;
-  margin: 0 0.5rem;
-}
-/* App.css additions */
-.wardrobe-container {
-  padding: 1rem;
-  text-align: center;
-}
-
-.carousel {
-  display: flex;
-  overflow-x: auto;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.carousel-item {
-  flex: 0 0 auto;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 0.5rem;
-  width: 200px;
-}
-
-.carousel-item img {
-  width: 100%;
-  height: auto;
-  border-radius: 5px;
-}
-
-.add-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+/* If you want to tweak the content area spacing */
+.ant-layout-content {
+  background: #fff;
+  padding: 24px;
+  min-height: calc(100vh - 64px); /* 64px is the default header height */
 }
