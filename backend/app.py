@@ -159,9 +159,10 @@ def save_to_wardrobe():
 
 @app.route("/clothing-items", methods=["GET"])
 def get_clothing_items():
-    # Fetch all clothing items from the database.
-    items = clothing_table.all()
+    # Fetch all clothing items and include doc_id
+    items = [{"id": item.doc_id, **item} for item in clothing_table.all()]
     return jsonify(items)
+
 
 @app.route("/clothing-items", methods=["POST"])
 def add_clothing_item():
@@ -174,6 +175,17 @@ def add_clothing_item():
     # Insert the item into TinyDB
     clothing_table.insert(data)
     return jsonify(data), 201
+
+@app.route("/clothing-items/<int:item_id>", methods=["DELETE"])
+def delete_clothing_item(item_id):
+    print(item_id)  # Debugging output
+
+    if not clothing_table.contains(doc_id=item_id):
+        return jsonify({"error": "Item not found"}), 404
+
+    clothing_table.remove(doc_ids=[item_id])
+    return jsonify({"success": True})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import StageWrapper from "./StageWrapper";
+import {Button} from "antd";
+import {UploadOutlined} from "@ant-design/icons";
 
 const getImageSrc = (base64) => (base64 ? `data:image/png;base64,${base64}` : "");
 
@@ -38,6 +40,12 @@ const UploadStage = ({
     };
   }, [imageBase64]);
 
+    const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <StageWrapper
       title="Upload an Image"
@@ -45,9 +53,9 @@ const UploadStage = ({
       onConfirm={onConfirm}
       loading={loading}
     >
-      <label className="upload-button" htmlFor="imageUpload">
-        Choose Image
-      </label>
+      <Button onClick={handleUploadClick} size="large" icon={<UploadOutlined />}>
+        Upload Image
+      </Button>
       <input
         type="file"
         id="imageUpload"

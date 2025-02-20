@@ -1,0 +1,40 @@
+.shimmering-header {
+  position: relative;
+  text-align: center;
+  font-weight: bold;
+  font-size: 6rem;
+  color: black; /* Plain black text */
+  overflow: hidden; /* Ensure the shimmer effect stays inside */
+}
+
+/* Glassy reflection overlay */
+.shimmering-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 110%;
+  height: 100%;
+  background: linear-gradient(
+    115deg,
+    rgba(0, 0, 0, 1) 42%,
+    rgba(255, 0, 204, 0.4) 45%,
+    rgba(51, 51, 255, 0.4) 47%,
+    rgba(0, 255, 204, 0.4) 50%,
+    rgba(255, 255, 102, 0.4) 53%,
+    rgba(255, 0, 204, 0.4) 55%,
+    rgba(0, 0, 0, 1) 58%
+  );
+  mix-blend-mode: screen; /* Adds the glossy effect */
+  animation: gloss-move 5s linear infinite;
+}
+
+/* Continuous movement of the glossy overlay */
+@keyframes gloss-move {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
