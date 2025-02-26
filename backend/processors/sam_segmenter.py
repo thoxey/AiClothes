@@ -59,62 +59,43 @@ class SAMSegmenter:
         path_str = "M " + " ".join(f"{p[0]},{p[1]}" for p in pts) + " Z"
         return path_str
 
-    def predict_clothing_interactive(self, pil_image: Image.Image):
+    def predict_clothing_interactive(self, pil_image: Image.Image, click_point: dict):
         """
-        Example of an interactive segmentation approach with a single point
-        or bounding box. We convert a Pillow Image to a NumPy array, run SAM,
-        and return a union mask + compound SVG paths.
+        Runs interactive segmentation using the provided click point.
         """
         start_time = time.time()
 
-        # Convert from RGBA → RGB or BGR as needed
+        # Convert from RGBA → RGB
         np_image = np.array(pil_image.convert("RGB"))
-        # If SAM expects RGB, keep it as is. If it expects BGR, do:
-        # np_image = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
 
         self.predictor.set_image(np_image)
 
-        # Example: center point
+        # Get image dimensions
         h, w, _ = np_image.shape
-        input_point = np.array([[w / 2, h / 2]])
-        input_label = np.array([1])
 
+        # Extract the click point
+        input_x = click_point.get("x", w / 2)
+        input_y = click_point.get("y", h / 2)
+        input_point = np.array([[input_x, input_y]])  # Convert to NumPy array
+        input_label = np.array([1])  # Foreground label
+
+        # Run SAM model for segmentation
         masks, scores, logits = self.predictor.predict(
             point_coords=input_point,
             point_labels=input_label,
-            multimask_output=True,
+            multimask_output=False,  # Single mask output
         )
 
-        # If no masks found
+        # If no masks found, return None
         if masks is None or not masks.any():
             print("⚠️ No masks found; no interactive segmentation result.")
-            return None, []
+            return None
 
-        # Convert each mask from True/False to 255/0
-        masks = [mask.astype(np.uint8) * 255 for mask in masks]
-
-        union_mask = np.zeros_like(masks[0])
-        compound_paths = []
-
-        for mask in masks:
-            union_mask = cv2.bitwise_or(union_mask, mask)
-            # Find contours
-            contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            if hierarchy is not None:
-                hierarchy = hierarchy[0]
-                for i, hvals in enumerate(hierarchy):
-                    if hvals[3] == -1:  # top-level
-                        outer_path = self.contour_to_path_str(contours[i])
-                        # check for holes (child contours)
-                        inner_paths = []
-                        for j, h2 in enumerate(hierarchy):
-                            if h2[3] == i:
-                                inner_paths.append(self.contour_to_path_str(contours[j]))
-                        compound_path = outer_path + (" " + " ".join(inner_paths) if inner_paths else "")
-                        compound_paths.append(compound_path)
+        # Convert mask to binary (255/0)
+        union_mask = masks[0].astype(np.uint8) * 255
 
         print(f"Elapsed time (interactive): {time.time() - start_time:.6f}s")
-        return union_mask, compound_paths
+        return union_mask
 
     def segment_clothing_automatic(self, pil_image: Image.Image):
         """

@@ -32,36 +32,39 @@ def serve_react_app(path):
 @app.route("/upload", methods=["POST"])
 def upload_image():
     """
-    Receives a JSON body with "imageBase64".
-    Processes the image (predict_clothing) in memory,
-    returns polygons and a mask as base64.
+    Receives a JSON body with "imageBase64" and "clickPoint".
+    Processes the image (predict_clothing_interactive) in memory,
+    returns the segmentation mask as base64.
     """
     data = request.get_json()
-    if not data or "imageBase64" not in data:
-        return jsonify({"error": "No base64 image provided"}), 400
+    if not data or "imageBase64" not in data or "clickPoint" not in data:
+        return jsonify({"error": "No base64 image or click point provided"}), 400
 
     image_base64 = data["imageBase64"]
+    click_point = data["clickPoint"]
 
-    # 1. Decode the base64 into bytes
+    # Decode the base64 image into bytes
     try:
         image_bytes = base64.b64decode(image_base64)
-        # 2. Load into Pillow in memory
         image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
     except Exception as e:
         return jsonify({"error": f"Could not decode image: {str(e)}"}), 400
 
-    # 3. Process image with segmenter (in memory)
-    pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
-    union_mask, compound_paths = segmenter.predict_clothing_interactive(pil_image)
+    # Process the image with the interactive segmenter
+    union_mask = segmenter.predict_clothing_interactive(image, click_point)
 
-    # 4. Encode the mask as base64
+    # If no mask was generated, return an error
+    if union_mask is None:
+        return jsonify({"error": "No mask found"}), 400
+
+    # Encode the mask as base64
     encoded_mask = MaskProcessor.encode(union_mask)
 
     return jsonify({
         "success": True,
-        "polygons": compound_paths,
         "mask": encoded_mask
     })
+
 
 @app.route("/save-selection", methods=["POST"])
 def save_selection():
@@ -100,6 +103,46 @@ def save_selection():
     except Exception as e:
         print("Error processing mask:", e)
         return jsonify({"error": f"Failed to process mask: {str(e)}"}), 500
+
+@app.route("/create-segmented-image", methods=["POST"])
+def create_segmented_image():
+    """
+    Receives JSON with "imageBase64" and "clickPoint".
+    Runs segmentation based on the point, applies the mask,
+    and returns the final cutout as base64.
+    """
+    data = request.get_json()
+    if not data or "imageBase64" not in data or "clickPoint" not in data:
+        return jsonify({"error": "Missing imageBase64 or clickPoint"}), 400
+
+    image_base64 = data["imageBase64"]
+    click_point = data["clickPoint"]
+
+    try:
+        # Decode the base64 image
+        image_bytes = base64.b64decode(image_base64)
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+
+        # Run segmentation using the click point
+        union_mask = segmenter.predict_clothing_interactive(image, click_point)
+
+        if union_mask is None:
+            return jsonify({"error": "No mask found"}), 400
+
+        encoded_mask = MaskProcessor.encode(union_mask)
+        # Apply the mask to extract the cutout
+        cutout = MaskProcessor.apply(image, encoded_mask)
+
+        # Convert the cutout to base64
+        output_buffer = io.BytesIO()
+        cutout.save(output_buffer, format="PNG")
+        cutout_base64 = base64.b64encode(output_buffer.getvalue()).decode("utf-8")
+
+        return jsonify({"success": True, "cutoutBase64": cutout_base64})
+
+    except Exception as e:
+        print("Error processing segmentation:", e)
+        return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
 
 @app.route("/identify-image", methods=["POST"])
 def identify_image():
