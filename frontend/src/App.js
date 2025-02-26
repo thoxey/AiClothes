@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { Layout, Menu } from "antd";
-
-import "./App.css"; // Your custom styles
+import AddItemFlow from "./components/AddItemFlow";
 import Wardrobe from "./components/Wardrobe";
-import AddClothingFlow from "./components/AddClothingFlow";
 
 const { Header, Content } = Layout;
 
@@ -15,15 +13,10 @@ function App() {
   };
 
   return (
-    <Layout className="app-layout">
+    <Layout style={{ height: "100vh", overflow: "hidden" }}>
+      {/* Header at the top (never pushed) */}
       <Header>
-        {/* The top navigation menu with two items. */}
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[page]}
-          style={{ lineHeight: "64px" }}
-        >
+        <Menu theme="dark" mode="horizontal" selectedKeys={[page]}>
           <Menu.Item key="wardrobe" onClick={() => setPage("wardrobe")}>
             Wardrobe
           </Menu.Item>
@@ -33,12 +26,12 @@ function App() {
         </Menu>
       </Header>
 
-      {/* Main content area */}
-      <Content style={{ padding: "24px" }}>
+      {/* Content area takes remaining space */}
+      <Content style={{ flex: 1, position: "relative", overflow: "hidden" }}>
         {page === "wardrobe" ? (
           <Wardrobe onAdd={() => setPage("add")} />
         ) : (
-          <AddClothingFlow onFlowComplete={handleFlowComplete} />
+          <AddItemFlow onFlowComplete={handleFlowComplete} />
         )}
       </Content>
     </Layout>

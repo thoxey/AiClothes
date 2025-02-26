@@ -4,7 +4,7 @@ import { Card, Button, Spin } from "antd";
 
 const StageWrapper = ({ title, children, confirmLabel, onConfirm, loading }) => {
   return (
-    <Card title={title} style={{ marginTop: "1rem" }}>
+    <Card title={title} style={{ marginTop: "1rem"}}>
       <Spin spinning={loading} tip="Processing...">
         <div className="stage-content">{children}</div>
         <Button
