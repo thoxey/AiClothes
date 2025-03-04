@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Card, Spin, message } from "antd";
+import { Card, Spin, message, Select } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import BookStage from "./BookStage";
 import { useAddItemFlowContext } from "./AddItemFlowContext";
 
 const { Meta } = Card;
+const { Option } = Select;
 
 const getImageSrc = (base64) => (base64 ? `data:image/png;base64,${base64}` : "");
 
@@ -13,6 +14,9 @@ const IdentifyStage = ({ onComplete }) => {
   const [identifiedClothing, setIdentifiedClothing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const [selectedClothing, setSelectedClothing] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
 
   useEffect(() => {
     if (!cutoutBase64) return;
@@ -29,11 +33,18 @@ const IdentifyStage = ({ onComplete }) => {
         setLoading(false);
 
         if (data.success) {
+          const clothingOptions = data.clothingType?.map(item => item.label) || ["Unknown"];
+          const colorOptions = data.dominantColor?.map(item => item.label) || ["Unknown"];
+
           setIdentifiedClothing({
-            clothingType: data.clothingType,
-            dominantColor: data.dominantColor,
+            clothingOptions,
+            colorOptions,
             imageBase64: cutoutBase64, // Keep the cutout as the preview image
           });
+
+          // ✅ Preselect the top result
+          setSelectedClothing(clothingOptions[0]);
+          setSelectedColor(colorOptions[0]);
         } else {
           message.error("Failed to identify clothing: " + data.error);
         }
@@ -48,7 +59,7 @@ const IdentifyStage = ({ onComplete }) => {
   }, [cutoutBase64]);
 
   const handleConfirm = async () => {
-    if (!identifiedClothing) return;
+    if (!selectedClothing || !selectedColor) return;
     setSaving(true);
 
     try {
@@ -57,8 +68,8 @@ const IdentifyStage = ({ onComplete }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cutoutBase64,
-          clothingType: identifiedClothing.clothingType,
-          dominantColor: identifiedClothing.dominantColor,
+          clothingType: selectedClothing,
+          dominantColor: selectedColor,
         }),
       });
 
@@ -98,7 +109,7 @@ const IdentifyStage = ({ onComplete }) => {
             <Card
               hoverable
               style={{ width: 300 }}
-              cover={<img src={getImageSrc(identifiedClothing.imageBase64)} alt={identifiedClothing.clothingType} />}
+              cover={<img src={getImageSrc(identifiedClothing.imageBase64)} alt={selectedClothing} />}
               actions={[
                 saving ? (
                   <Spin size="small" />
@@ -111,7 +122,35 @@ const IdentifyStage = ({ onComplete }) => {
                 ),
               ]}
             >
-              <Meta title={identifiedClothing.clothingType} description={identifiedClothing.dominantColor} />
+              <div style={{ marginBottom: "10px" }}>
+                <p style={{ marginBottom: "4px" }}>Clothing Type:</p>
+                <Select
+                  value={selectedClothing}
+                  onChange={setSelectedClothing}
+                  style={{ width: "100%" }}
+                >
+                  {identifiedClothing.clothingOptions.map((option) => (
+                    <Option key={option} value={option}>
+                      {option}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+
+              <div>
+                <p style={{ marginBottom: "4px" }}>Dominant Color:</p>
+                <Select
+                  value={selectedColor}
+                  onChange={setSelectedColor}
+                  style={{ width: "100%" }}
+                >
+                  {identifiedClothing.colorOptions.map((option) => (
+                    <Option key={option} value={option}>
+                      {option}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
             </Card>
           ) : (
             <p>Clothing identification failed.</p>

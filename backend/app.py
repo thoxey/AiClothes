@@ -80,22 +80,22 @@ def identify_image():
         return jsonify({"error": "Missing cutoutBase64"}), 400
 
     try:
-        # 1. Decode the image
+        # ✅ Decode the image
         image_bytes = base64.b64decode(image_base64)
-        # Create a PIL Image from the image bytes
         image = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
 
-        # 2. Process the image with the CLIP model
+        # ✅ Classify clothing type, color, and description
         clothing_type = clip_processor.classify_clothing(image)
-
-        # 3. Process the image with the Image Processor
         dominant_color = clip_processor.classify_color(image)
 
-        return jsonify({"success": True, "clothingType": clothing_type, "dominantColor": dominant_color})
+        return jsonify({
+            "success": True,
+            "clothingType": clothing_type,
+            "dominantColor": dominant_color,
+        })
 
     except Exception as e:
-        print("Error processing image:", e)
-        return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
+        return jsonify({"error": f"Error processing image: {str(e)}"}), 500
 
 @app.route("/save-to-wardrobe", methods=["POST"])
 def save_to_wardrobe():
