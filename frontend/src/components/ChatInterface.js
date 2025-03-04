@@ -1,59 +1,55 @@
 import React, { useState } from "react";
-import { Input, Button, List, Card } from "antd";
+import { Button, List, Card, Spin } from "antd";
+import { useWidgetContext } from "./WidgetContext";
+import ReactMarkdown from "react-markdown";
 
 const ChatInterface = () => {
+  const { widgetData } = useWidgetContext(); // Get city & weather from context
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-
-    //Add code to send to the backend here
-  };
+  const [loading, setLoading] = useState(false);
 
   const generateOutfit = async () => {
+    setLoading(true); // Disable button while loading
+
     try {
       const response = await fetch("/suggest-outfit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({
+          city: widgetData.city || "Unknown Location",
+          weather: widgetData.weather ? widgetData.weather.temperature : null,
+        }),
       });
+
       const data = await response.json();
       const aiMessage = { sender: "ai", text: data.suggested_outfit || "No outfit suggestions found." };
+
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [...prev, { sender: "ai", text: "Error processing your request." }]);
+    } finally {
+      setLoading(false); // Re-enable button after response
     }
   };
 
   return (
-    <Card title="Talk to Wardrobe Guru" style={{ width: '80%', margin: "1rem auto" }}>
+    <Card title="Wardrobe Guru" style={{ width: "80%", margin: "1rem auto" }}>
       <List
         dataSource={messages}
         renderItem={(msg) => (
-          <List.Item style={{ textAlign: msg.sender === "user" ? "right" : "left" }}>
-            <span style={{ background: msg.sender === "user" ? "#e6f7ff" : "#f5f5f5", padding: "5px 10px", borderRadius: "5px" }}>
-              {msg.text}
+          <List.Item style={{ textAlign: "left" }}>
+            <span style={{ background: "#f5f5f5", padding: "5px 10px", borderRadius: "5px", display: "block" }}>
+              <ReactMarkdown>{msg.text}</ReactMarkdown> {/* Markdown rendering */}
             </span>
           </List.Item>
         )}
         style={{ maxHeight: 300, overflowY: "auto" }}
       />
-      <Input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onPressEnter={handleSend}
-        placeholder="Ask something..."
-        addonAfter={<Button onClick={handleSend} type="primary">Send</Button>}
-      />
-        <Button onClick={generateOutfit} type="primary" style={{width: '100%'}}>
-            Generate me an Outfit
-        </Button>
+
+      <Button onClick={generateOutfit} type="primary" style={{ width: "100%" }} disabled={loading}>
+        {loading ? <Spin /> : "Generate me an Outfit"}
+      </Button>
     </Card>
   );
 };

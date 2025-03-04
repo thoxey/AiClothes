@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { Carousel, Button, Card, Popconfirm } from "antd";
-import ChatInterface from "./ChatInterface"; // Import the chat component
+import { DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { Carousel, Button, Card, Popconfirm, Row, Col } from "antd";
+import ChatInterface from "./ChatInterface";
+import LocationFetcher from "./LocationFetcher";
+import { WidgetProvider } from "./WidgetContext"; // Import context provider
 import "../Wardrobe.css";
 
 const { Meta } = Card;
@@ -39,30 +41,38 @@ const Wardrobe = ({ onAdd }) => {
   };
 
   return (
-    <div className="wardrobe-container">
-      <h1 className="shimmering-header">WARDROBE</h1>
+    <WidgetProvider> {/* Wrap the entire UI with WidgetProvider */}
+      <div className="wardrobe-container">
+        <h1 className="shimmering-header">WARDROBE</h1>
 
+        <Row justify="center" style={{ width: "100%" }}>
+          <Col span={4}>
+            <LocationFetcher />
+          </Col>
+        </Row>
 
-      <ChatInterface /> {/* Add the chat component here */}
-      <Carousel autoplay slidesPerRow={6} draggable style={{ width: '80%', margin: "0 auto" }}>
-        {items.map((item) => (
-          <div key={item.id} style={{ display: "flex", justifyContent: "center", padding: "1rem" }}>
-            <Card
-              hoverable
-              style={{ width: 300 }}
-              cover={<img src={getImageSrc(item.imageBase64)} alt={item.clothingType} style={{ maxHeight: 300, objectFit: "contain" }} />}
-              actions={[
-                <Popconfirm title="Are you sure?" okText="Yes, delete" cancelText="Cancel" onConfirm={() => handleDelete(item.id)}>
-                  <DeleteOutlined key="delete" style={{ color: "red" }} />
-                </Popconfirm>
-              ]}
-            >
-              <Meta title={item.clothingType} description={item.dominantColor} />
-            </Card>
-          </div>
-        ))}
-      </Carousel>
-    </div>
+        <ChatInterface />
+
+        <Carousel autoplay slidesPerRow={6} draggable style={{ width: "80%", margin: "0 auto" }}>
+          {items.map((item) => (
+            <div key={item.id} style={{ display: "flex", justifyContent: "center", padding: "1rem" }}>
+              <Card
+                hoverable
+                style={{ width: 300 }}
+                cover={<img src={getImageSrc(item.imageBase64)} alt={item.clothingType} style={{ maxHeight: 300, objectFit: "contain" }} />}
+                actions={[
+                  <Popconfirm title="Are you sure?" okText="Yes, delete" cancelText="Cancel" onConfirm={() => handleDelete(item.id)}>
+                    <DeleteOutlined key="delete" style={{ color: "red" }} />
+                  </Popconfirm>
+                ]}
+              >
+                <Meta title={item.clothingType} description={item.dominantColor} />
+              </Card>
+            </div>
+          ))}
+        </Carousel>
+      </div>
+    </WidgetProvider>
   );
 };
 

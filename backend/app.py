@@ -4,12 +4,11 @@ import base64
 import io
 from PIL import Image
 
-from backend.llm.GeneratePrompt import WardrobeGuru
 from backend.processors.mask_processor import MaskProcessor
 from backend.processors.sam_segmenter import SAMSegmenter
 from backend.processors.image_processor import ImageProcessor
 from backend.processors.clip_processor import CLIPProcessor
-
+from backend.wardrobe_guru import WardrobeGuru
 
 app = Flask(__name__, static_folder='frontend/build')
 
@@ -157,17 +156,16 @@ def delete_clothing_item(item_id):
 
 @app.route('/suggest-outfit', methods=['POST'])
 def suggest_outfit():
+    data = request.get_json()
+    weather_info = data.get("weather")
     # get the clothing table with the images removed
     clothing_table_no_images = clothing_table.all()
     for item in clothing_table_no_images:
         item.pop("imageBase64")
     guru = WardrobeGuru()
-    response = guru.get_outfit_from_deepseek(clothing_table_no_images)
+    response = guru.get_outfit_from_deepseek(clothing_table_no_images, weather_info)
 
     return jsonify({"suggested_outfit": response})
-
-if __name__ == "__main__":
-    app.run(debug=True)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
