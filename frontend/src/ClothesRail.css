@@ -1,0 +1,50 @@
+.clothes-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.clothes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+  width: 80%;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.clothing-item {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.clothing-item:hover {
+  transform: scale(1.05);
+}
+
+.clothing-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hover-info {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.info-card {
+  font-size: 14px;
+}

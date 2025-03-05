@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { Carousel, Button, Card, Popconfirm, Row, Col } from "antd";
+import { Row, Col } from "antd";
 import ChatInterface from "./ChatInterface";
 import LocationFetcher from "./LocationFetcher";
-import { WidgetProvider } from "./WidgetContext"; // Import context provider
+import { WidgetProvider } from "./WidgetContext";
+import ClothesRail from "./ClothesRail";
 import "../Wardrobe.css";
-
-const { Meta } = Card;
 
 const Wardrobe = ({ onAdd }) => {
   const [items, setItems] = useState([]);
@@ -25,8 +23,6 @@ const Wardrobe = ({ onAdd }) => {
     fetchWardrobe();
   }, []);
 
-  const getImageSrc = (base64) => base64 ? `data:image/png;base64,${base64}` : "";
-
   const handleDelete = async (itemId) => {
     if (!itemId) return;
 
@@ -41,7 +37,7 @@ const Wardrobe = ({ onAdd }) => {
   };
 
   return (
-    <WidgetProvider> {/* Wrap the entire UI with WidgetProvider */}
+    <WidgetProvider>
       <div className="wardrobe-container">
         <h1 className="shimmering-header">WARDROBE</h1>
 
@@ -53,24 +49,8 @@ const Wardrobe = ({ onAdd }) => {
 
         <ChatInterface />
 
-        <Carousel autoplay slidesPerRow={6} draggable style={{ width: "80%", margin: "0 auto" }}>
-          {items.map((item) => (
-            <div key={item.id} style={{ display: "flex", justifyContent: "center", padding: "1rem" }}>
-              <Card
-                hoverable
-                style={{ width: 300 }}
-                cover={<img src={getImageSrc(item.imageBase64)} alt={item.clothingType} style={{ maxHeight: 300, objectFit: "contain" }} />}
-                actions={[
-                  <Popconfirm title="Are you sure?" okText="Yes, delete" cancelText="Cancel" onConfirm={() => handleDelete(item.id)}>
-                    <DeleteOutlined key="delete" style={{ color: "red" }} />
-                  </Popconfirm>
-                ]}
-              >
-                <Meta title={item.clothingType} description={item.dominantColor} />
-              </Card>
-            </div>
-          ))}
-        </Carousel>
+        {/* ✅ Use the new ClothesRail component */}
+        <ClothesRail items={items} onDelete={handleDelete} />
       </div>
     </WidgetProvider>
   );
