@@ -1,25 +1,151 @@
 {
-  "categories": {
-    "Tops": ["T-shirt", "polo shirt", "button-up shirt", "flannel shirt", "Henley shirt"],
-    "Mid Layers": ["hoodie", "sweatshirt", "crewneck sweatshirt", "cardigan", "pullover sweater", "turtleneck"],
-    "Outerwear": ["jacket", "bomber jacket", "leather jacket", "denim jacket", "blazer", "trench coat", "parka", "peacoat"],
-    "Bottoms": ["jeans", "chinos", "cargo pants", "joggers", "trousers", "dress trousers", "shorts"],
-    "Suits & Formalwear": ["suit", "tuxedo", "dress trousers"],
-    "Footwear": ["sneakers", "running shoes", "boots", "loafers", "dress shoes"]
-  },
-  "materials": {
-    "jeans": "denim",
-    "chinos": "cotton",
-    "hoodie": "fleece",
-    "sweatshirt": "cotton-blend",
-    "trench coat": "cotton",
-    "peacoat": "wool",
-    "polo shirt": "pique cotton",
-    "dress trousers": "wool",
-    "loafers": "suede",
-    "leather jacket": "leather",
-    "tuxedo": "wool",
-    "sneakers": "leather",
-    "running shoes": "mesh"
-  }
+    "categories": {
+        "Tops": [
+            "T-shirt",
+            "polo shirt",
+            "button-up shirt",
+            "flannel shirt",
+            "Henley shirt",
+            "tank top",
+            "crop top",
+            "blouse",
+            "tunic",
+            "camisole"
+        ],
+        "Mid Layers": [
+            "hoodie",
+            "sweatshirt",
+            "crewneck sweatshirt",
+            "cardigan",
+            "pullover sweater",
+            "turtleneck",
+            "vest",
+            "gilet"
+        ],
+        "Outerwear": [
+            "jacket",
+            "bomber jacket",
+            "leather jacket",
+            "denim jacket",
+            "blazer",
+            "trench coat",
+            "parka",
+            "peacoat",
+            "anorak",
+            "windbreaker",
+            "poncho"
+        ],
+        "Bottoms": [
+            "jeans",
+            "chinos",
+            "cargo pants",
+            "joggers",
+            "trousers",
+            "shorts",
+            "skirt",
+            "pencil skirt",
+            "a-line skirt",
+            "pleated skirt",
+            "wrap skirt",
+            "maxi skirt",
+            "mini skirt"
+        ],
+        "Dresses & One-Pieces": [
+            "dress",
+            "midi dress",
+            "maxi dress",
+            "mini dress",
+            "wrap dress",
+            "cocktail dress",
+            "evening gown",
+            "sundress",
+            "jumpsuit",
+            "romper",
+            "overalls",
+            "dungarees"
+        ],
+        "Footwear": [
+            "sneakers",
+            "running shoes",
+            "boots",
+            "loafers",
+            "dress shoes",
+            "heels",
+            "sandals",
+            "flats",
+            "mules",
+            "slippers",
+            "clogs",
+            "espadrilles"
+        ],
+        "Activewear": [
+            "sports bra",
+            "leggings",
+            "tracksuit",
+            "yoga pants",
+            "bike shorts",
+            "gym shorts",
+            "rash guard",
+            "base layer"
+        ],
+        "Sleepwear & Loungewear": [
+            "pyjamas",
+            "nightgown",
+            "robe",
+            "loungewear set",
+            "slip dress"
+        ],
+        "Swimwear": [
+            "swimsuit",
+            "bikini",
+            "one-piece swimsuit",
+            "board shorts",
+            "swim trunks"
+        ],
+        "Accessories": [
+            "hat",
+            "cap",
+            "beanie",
+            "scarf",
+            "gloves",
+            "belt",
+            "tie",
+            "bow tie"
+        ]
+    },
+    "colors": [
+        "black", "white", "gray", "light gray", "dark gray",
+        "red", "dark red", "light red", "burgundy", "maroon",
+        "blue", "dark blue", "light blue", "navy", "sky blue", "teal",
+        "green", "dark green", "light green", "olive", "mint", "forest green",
+        "yellow", "gold", "mustard", "light yellow",
+        "beige", "tan", "khaki", "camel", "light brown", "dark brown",
+        "pink", "light pink", "dark pink", "fuchsia", "salmon",
+        "purple", "light purple", "dark purple", "lavender", "violet",
+        "orange", "light orange", "dark orange", "rust",
+        "turquoise", "cyan", "magenta"
+    ],
+    "patterns": [
+        "solid",
+        "striped",
+        "plaid",
+        "polka dot",
+        "floral",
+        "camouflage",
+        "tie-dye",
+        "paisley",
+        "animal print",
+        "checkered",
+        "denim",
+        "gradient"
+    ],
+    "styles": [
+        "casual", "business casual", "formal",
+        "summer", "spring", "athletic", "streetwear",
+        "vacation", "bohemian", "vintage", "preppy",
+        "minimalist", "sporty", "cocktail", "outdoor",
+        "winter", "autumn", "chic", "retro", "grunge",
+        "punk", "gothic", "Y2K", "elegant", "loungewear",
+        "workwear", "evening wear", "hipster", "festival"
+    ]
 }

@@ -10,5 +10,19 @@
         "purple", "light purple", "dark purple", "lavender", "violet",
         "orange", "light orange", "dark orange", "rust",
         "turquoise", "cyan", "magenta"
+    ],
+    "patterns": [
+        "solid",
+        "striped",
+        "plaid",
+        "polka dot",
+        "floral",
+        "camouflage",
+        "tie-dye",
+        "paisley",
+        "animal print",
+        "checkered",
+        "denim",
+        "gradient"
     ]
 }

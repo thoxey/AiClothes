@@ -86,12 +86,16 @@ def identify_image():
 
         # ✅ Classify clothing type, color, and description
         clothing_type = clip_processor.classify_clothing(image)
-        dominant_color = clip_processor.classify_color(image)
+        colours = clip_processor.classify_colors(image)
+        pattern = clip_processor.classify_pattern(image)
+        style = clip_processor.classify_style(image)
 
         return jsonify({
             "success": True,
             "clothingType": clothing_type,
-            "dominantColor": dominant_color,
+            "colors": colours,
+            "pattern": pattern,
+            "style": style
         })
 
     except Exception as e:
@@ -103,51 +107,42 @@ def save_to_wardrobe():
     if not data:
         return jsonify({"error": "No data sent"}), 400
 
-    image_base64 = data.get("cutoutBase64")
-    if not image_base64:
-        return jsonify({"error": "Missing cutoutBase64"}), 400
+    required_fields = ["cutoutBase64", "clothingType", "colors", "pattern", "style"]
+    missing_fields = [field for field in required_fields if field not in data]
 
-    item_type = data.get("clothingType")
-    if not item_type:
-        return jsonify({"error": "Missing clothingType"}), 400
-
-    dominant_color = data.get("dominantColor")
-    if not dominant_color:
-        return jsonify({"error": "Missing dominantColor"}), 400
+    if missing_fields:
+        return jsonify({"error": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
     try:
-        document = jsonify({"success": True, "clothingType": item_type, "dominantColor": dominant_color, "imageBase64": image_base64})
-        clothing_table.insert(document.get_json())
-        return jsonify({"success": True, "clothingType": item_type, "dominantColor": dominant_color, "imageBase64": image_base64})
+        # Structure the item properly
+        item = {
+            "clothingType": data["clothingType"],
+            "colors": data["colors"],  # List of colors
+            "pattern": data["pattern"],
+            "style": data["style"],
+            "imageBase64": data["cutoutBase64"],
+        }
+
+        doc_id = clothing_table.insert(item)
+        item["id"] = doc_id  # Add doc_id for reference
+
+        return jsonify({"success": True, **item}), 201
 
     except Exception as e:
-        print("Error saving image:", e)
-        return jsonify({"error": f"Failed to save image: {str(e)}"}), 500
+        print("Error saving clothing item:", e)
+        return jsonify({"error": f"Failed to save item: {str(e)}"}), 500
 
 
 @app.route("/clothing-items", methods=["GET"])
 def get_clothing_items():
-    # Fetch all clothing items and include doc_id
+    """Fetch all clothing items with their ID."""
     items = [{"id": item.doc_id, **item} for item in clothing_table.all()]
     return jsonify(items)
 
 
-@app.route("/clothing-items", methods=["POST"])
-def add_clothing_item():
-    data = request.get_json()
-    # Check for all required fields
-    required_fields = ["clothingType", "dominantColor", "imageBase64" ]
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing one or more required fields."}), 400
-
-    # Insert the item into TinyDB
-    clothing_table.insert(data)
-    return jsonify(data), 201
-
 @app.route("/clothing-items/<int:item_id>", methods=["DELETE"])
 def delete_clothing_item(item_id):
-    print(item_id)  # Debugging output
-
+    """Delete a clothing item by its ID."""
     if not clothing_table.contains(doc_id=item_id):
         return jsonify({"error": "Item not found"}), 404
 
