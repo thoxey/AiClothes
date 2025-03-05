@@ -14,10 +14,37 @@ const IdentifyStage = ({ onComplete }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Stores available options from backend
+  const [fashionOptions, setFashionOptions] = useState({
+    clothingTypes: [],
+    colors: [],
+    patterns: [],
+    styles: []
+  });
+
+  // Selected values
   const [selectedClothing, setSelectedClothing] = useState(null);
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedPattern, setSelectedPattern] = useState(null);
   const [selectedStyle, setSelectedStyle] = useState(null);
+
+  // ✅ Fetch all fashion options from backend
+  useEffect(() => {
+    const fetchFashionOptions = async () => {
+      try {
+        const response = await fetch("/fashion-options");
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+
+        setFashionOptions(data);
+      } catch (error) {
+        console.error("Error fetching fashion options:", error);
+        message.error("Failed to load fashion options.");
+      }
+    };
+
+    fetchFashionOptions();
+  }, []);
 
   useEffect(() => {
     if (!cutoutBase64) return;
@@ -34,24 +61,19 @@ const IdentifyStage = ({ onComplete }) => {
         setLoading(false);
 
         if (data.success) {
-          const clothingOptions = data.clothingType?.map(item => item.label) || ["Unknown"];
-          const colorOptions = data.colors?.map(item => item.label) || ["Unknown"];
-          const patternOptions = data.pattern?.map(item => item.label) || ["Unknown"];
-          const styleOptions = data.style?.map(item => item.label) || ["Unknown"];
-
           setIdentifiedClothing({
-            clothingOptions,
-            colorOptions,
-            patternOptions,
-            styleOptions,
-            imageBase64: cutoutBase64, // Keep the cutout as the preview image
+            clothingOptions: sortOptionsByConfidence(data.clothingType, fashionOptions.clothingTypes),
+            colorOptions: sortOptionsByConfidence(data.colors, fashionOptions.colors),
+            patternOptions: sortOptionsByConfidence(data.pattern, fashionOptions.patterns),
+            styleOptions: sortOptionsByConfidence(data.style, fashionOptions.styles),
+            imageBase64: cutoutBase64,
           });
 
-          // ✅ Preselect the top result for each category
-          setSelectedClothing(clothingOptions[0]);
-          setSelectedColors(colorOptions.slice(0, 2)); // Allow multiple colours
-          setSelectedPattern(patternOptions[0]);
-          setSelectedStyle(styleOptions[0]);
+          // ✅ Preselect identified values if available, otherwise use first from available options
+          setSelectedClothing(data.clothingType?.[0]?.label || fashionOptions.clothingTypes[0]);
+          setSelectedColors(data.colors?.map(item => item.label) || [fashionOptions.colors[0]]);
+          setSelectedPattern(data.pattern?.[0]?.label || fashionOptions.patterns[0]);
+          setSelectedStyle(data.style?.[0]?.label || fashionOptions.styles[0]);
         } else {
           message.error("Failed to identify clothing: " + data.error);
         }
@@ -63,7 +85,17 @@ const IdentifyStage = ({ onComplete }) => {
     };
 
     identifyClothing();
-  }, [cutoutBase64]);
+  }, [cutoutBase64, fashionOptions]); // Runs when fashionOptions are available
+
+  // ✅ Function to sort detected items (top confidence first, then the given order)
+  const sortOptionsByConfidence = (detected, allOptions) => {
+    if (!detected || detected.length === 0) return allOptions;
+
+    const detectedLabels = detected.map(item => item.label);
+    const remainingOptions = allOptions.filter(option => !detectedLabels.includes(option));
+
+    return [...detectedLabels, ...remainingOptions];
+  };
 
   const handleConfirm = async () => {
     if (!selectedClothing || selectedColors.length === 0 || !selectedPattern || !selectedStyle) return;
@@ -115,82 +147,28 @@ const IdentifyStage = ({ onComplete }) => {
           {loading ? (
             <Spin size="large" />
           ) : identifiedClothing ? (
-            <Card
-              hoverable
-              style={{ width: 300 }}
-              cover={<img src={getImageSrc(identifiedClothing.imageBase64)} alt={selectedClothing} />}
-              actions={[
-                saving ? (
-                  <Spin size="small" />
-                ) : (
-                  <CheckCircleOutlined
-                    key="confirm"
-                    style={{ fontSize: "30px", color: "green", cursor: "pointer" }}
-                    onClick={handleConfirm}
-                  />
-                ),
-              ]}
-            >
-              <div style={{ marginBottom: "10px" }}>
-                <p style={{ marginBottom: "4px" }}>Clothing Type:</p>
-                <Select
-                  value={selectedClothing}
-                  onChange={setSelectedClothing}
-                  style={{ width: "100%" }}
-                >
-                  {identifiedClothing.clothingOptions.map((option) => (
-                    <Option key={option} value={option}>
-                      {option}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
+            <Card hoverable style={{ width: 300 }} cover={<img src={getImageSrc(identifiedClothing.imageBase64)} alt={selectedClothing} />} actions={[
+              saving ? <Spin size="small" /> : <CheckCircleOutlined key="confirm" style={{ fontSize: "30px", color: "green", cursor: "pointer" }} onClick={handleConfirm} />
+            ]}>
+              <p>Clothing Type:</p>
+              <Select showSearch value={selectedClothing} onChange={setSelectedClothing} style={{ width: "100%" }}>
+                {identifiedClothing.clothingOptions.map((option) => <Option key={option} value={option}>{option}</Option>)}
+              </Select>
 
-              <div style={{ marginBottom: "10px" }}>
-                <p style={{ marginBottom: "4px" }}>Colors:</p>
-                <Select
-                  mode="multiple"
-                  value={selectedColors}
-                  onChange={setSelectedColors}
-                  style={{ width: "100%" }}
-                >
-                  {identifiedClothing.colorOptions.map((option) => (
-                    <Option key={option} value={option}>
-                      {option}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
+              <p>Colors:</p>
+              <Select mode="multiple" showSearch value={selectedColors} onChange={setSelectedColors} style={{ width: "100%" }}>
+                {identifiedClothing.colorOptions.map((option) => <Option key={option} value={option}>{option}</Option>)}
+              </Select>
 
-              <div style={{ marginBottom: "10px" }}>
-                <p style={{ marginBottom: "4px" }}>Pattern:</p>
-                <Select
-                  value={selectedPattern}
-                  onChange={setSelectedPattern}
-                  style={{ width: "100%" }}
-                >
-                  {identifiedClothing.patternOptions.map((option) => (
-                    <Option key={option} value={option}>
-                      {option}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
+              <p>Pattern:</p>
+              <Select showSearch value={selectedPattern} onChange={setSelectedPattern} style={{ width: "100%" }}>
+                {identifiedClothing.patternOptions.map((option) => <Option key={option} value={option}>{option}</Option>)}
+              </Select>
 
-              <div>
-                <p style={{ marginBottom: "4px" }}>Style:</p>
-                <Select
-                  value={selectedStyle}
-                  onChange={setSelectedStyle}
-                  style={{ width: "100%" }}
-                >
-                  {identifiedClothing.styleOptions.map((option) => (
-                    <Option key={option} value={option}>
-                      {option}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
+              <p>Style:</p>
+              <Select showSearch value={selectedStyle} onChange={setSelectedStyle} style={{ width: "100%" }}>
+                {identifiedClothing.styleOptions.map((option) => <Option key={option} value={option}>{option}</Option>)}
+              </Select>
             </Card>
           ) : (
             <p>Clothing identification failed.</p>

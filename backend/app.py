@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import base64
 import io
 from PIL import Image
+import json
 
 from backend.processors.mask_processor import MaskProcessor
 from backend.processors.sam_segmenter import SAMSegmenter
@@ -161,6 +162,26 @@ def suggest_outfit():
     response = guru.get_outfit_from_deepseek(clothing_table_no_images, weather_info)
 
     return jsonify({"suggested_outfit": response})
+
+@app.route("/fashion-options", methods=["GET"])
+def get_fashion_options():
+    """Returns available clothing types, colors, patterns, and styles."""
+    try:
+        with open("backend/clothing_types.json", "r") as f:
+            fashion_data = json.load(f)
+
+        # Flatten clothing categories into a single list
+        clothing_types = [item for category in fashion_data["categories"].values() for item in category]
+
+        return jsonify({
+            "clothingTypes": clothing_types,
+            "colors": fashion_data["colors"],
+            "patterns": fashion_data["patterns"],
+            "styles": fashion_data["styles"]
+        })
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to load fashion options: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
